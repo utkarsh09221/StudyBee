@@ -1,5 +1,8 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 // If user is already logged in, redirect to courses page
 if (isset($_SESSION['username'])) {
