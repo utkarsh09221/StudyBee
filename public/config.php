@@ -1,8 +1,8 @@
 <?php
 $servername = "mysql-utkarsh09221.alwaysdata.net";
-$username = "420678_"; // replace with the final user you created
-$password = "Sudha2908@";        // replace with the password you set
-$dbname = "utkarsh09221_studybee"; // full DB name you created
+$username = "420678_";      // ✅ full username
+$password = "Sudha2908@";          // ✅ your MySQL password
+$dbname = "utkarsh09221_studybee"; // ✅ correct database name
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

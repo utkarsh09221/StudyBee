@@ -1,21 +1,27 @@
 <?php
+// Start session safely
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-
-// If user is already logged in, redirect to courses page
+// Redirect to dashboard if already logged in
 if (isset($_SESSION['username'])) {
     header("Location: courses.php");
     exit;
 }
 
+// Include DB config
 require_once "config.php";
 
+// Variables
 $username = $password = "";
 $err = "";
 
-// Handle form submission
+// Enable error reporting for debugging (remove in production)
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Handle POST request
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Check for empty fields
@@ -26,47 +32,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $password = trim($_POST["password"]);
     }
 
-    // If no error, proceed to validate user
+    // If no error, check credentials
     if (empty($err)) {
         $sql = "SELECT id, username, password FROM users WHERE username = ?";
         $stmt = mysqli_prepare($conn, $sql);
 
         if ($stmt) {
-            mysqli_stmt_bind_param($stmt, "s", $param_username);
-            $param_username = $username;
+            mysqli_stmt_bind_param($stmt, "s", $username);
 
             if (mysqli_stmt_execute($stmt)) {
                 mysqli_stmt_store_result($stmt);
 
-                // Check if username exists
                 if (mysqli_stmt_num_rows($stmt) == 1) {
-                    mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password);
+                    mysqli_stmt_bind_result($stmt, $id, $db_username, $hashed_password);
                     if (mysqli_stmt_fetch($stmt)) {
-                        // Verify password
                         if (password_verify($password, $hashed_password)) {
-                            // Successful login
-                            $_SESSION["username"] = $username;
+                            // Password is correct → login successful
+                            $_SESSION["username"] = $db_username;
                             $_SESSION["id"] = $id;
                             $_SESSION["loggedin"] = true;
 
+                            // Redirect to dashboard
                             header("Location: courses.php");
                             exit;
                         } else {
-                            $err = "Incorrect password.";
+                            $err = "Invalid password.";
                         }
                     }
                 } else {
                     $err = "Username not found.";
                 }
             } else {
-                $err = "Something went wrong. Please try again later.";
+                $err = "Something went wrong. Please try again.";
             }
 
             mysqli_stmt_close($stmt);
         }
     }
+
+    // Optional: show error (if needed for debugging)
+    if (!empty($err)) {
+        echo "<p style='color:red;'>$err</p>";
+    }
 }
 ?>
+
 
 
 
